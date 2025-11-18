@@ -1,0 +1,208 @@
+@startuml StrokeSpoiler_Frontend_Architecture
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontSize 10
+
+' 색상 정의
+!define CORE_COLOR #E8F4F8
+!define FEATURE_COLOR #FFF4E6
+!define DATA_COLOR #FFE8E8
+!define DOMAIN_COLOR #E8FFE8
+!define PRESENTATION_COLOR #F0E8FF
+
+package "lib" {
+    
+    ' ========== Core 패키지 ==========
+    package "core" <<Rectangle>> CORE_COLOR {
+        
+        package "core/data" <<Rectangle>> DATA_COLOR {
+            component "models" as core_data_models
+            component "repositories" as core_data_repos
+            note right of core_data_models : API Response 모델
+            note right of core_data_repos : 공통 레포지토리 구현
+        }
+        
+        package "core/domain" <<Rectangle>> DOMAIN_COLOR {
+            component "repositories" as core_domain_repos
+            note right of core_domain_repos : 공통 레포지토리\n인터페이스
+        }
+        
+        package "core/presentation" <<Rectangle>> PRESENTATION_COLOR {
+            component "widgets" as core_widgets
+            component "providers" as core_providers
+            component "network" as core_network
+            component "enums" as core_enums
+            component "exceptions" as core_exceptions
+            component "theme" as core_theme
+            component "utils" as core_utils
+        }
+    }
+    
+    ' ========== Features 패키지 ==========
+    package "features" <<Rectangle>> FEATURE_COLOR {
+        
+        ' Auth Feature
+        package "auth" {
+            package "auth/data" <<Rectangle>> DATA_COLOR {
+                component "datasources" as auth_datasources
+                component "models" as auth_models
+                component "repositories" as auth_data_repos
+            }
+            
+            package "auth/domain" <<Rectangle>> DOMAIN_COLOR {
+                component "entities" as auth_entities
+                component "repositories" as auth_domain_repos
+                component "usecases" as auth_usecases
+            }
+            
+            package "auth/presentation" <<Rectangle>> PRESENTATION_COLOR {
+                component "views" as auth_views
+                component "providers" as auth_providers
+                component "state" as auth_state
+            }
+        }
+        
+        ' Health Data Feature
+        package "health_data" {
+            package "health_data/data" <<Rectangle>> DATA_COLOR {
+                component "datasources" as hd_datasources
+                component "models" as hd_models
+                component "repositories" as hd_data_repos
+            }
+            
+            package "health_data/domain" <<Rectangle>> DOMAIN_COLOR {
+                component "entities" as hd_entities
+                component "repositories" as hd_domain_repos
+                component "usecases" as hd_usecases
+            }
+            
+            package "health_data/presentation" <<Rectangle>> PRESENTATION_COLOR {
+                component "views" as hd_views
+                component "providers" as hd_providers
+                component "state" as hd_state
+            }
+        }
+        
+        ' Risk Prediction Feature
+        package "risk_prediction" {
+            package "risk_prediction/data" <<Rectangle>> DATA_COLOR {
+                component "datasources" as rp_datasources
+                component "models" as rp_models
+                component "repositories" as rp_data_repos
+            }
+            
+            package "risk_prediction/domain" <<Rectangle>> DOMAIN_COLOR {
+                component "entities" as rp_entities
+                component "repositories" as rp_domain_repos
+                component "usecases" as rp_usecases
+            }
+            
+            package "risk_prediction/presentation" <<Rectangle>> PRESENTATION_COLOR {
+                component "views" as rp_views
+                component "providers" as rp_providers
+                component "state" as rp_state
+            }
+        }
+        
+        ' What-if Analysis Feature
+        package "what_if_analysis" {
+            package "what_if_analysis/data" <<Rectangle>> DATA_COLOR {
+                component "datasources" as wa_datasources
+                component "models" as wa_models
+                component "repositories" as wa_data_repos
+            }
+            
+            package "what_if_analysis/domain" <<Rectangle>> DOMAIN_COLOR {
+                component "entities" as wa_entities
+                component "repositories" as wa_domain_repos
+                component "usecases" as wa_usecases
+            }
+            
+            package "what_if_analysis/presentation" <<Rectangle>> PRESENTATION_COLOR {
+                component "views" as wa_views
+                component "providers" as wa_providers
+                component "state" as wa_state
+            }
+        }
+        
+        ' Monitoring Feature
+        package "monitoring" {
+            package "monitoring/data" <<Rectangle>> DATA_COLOR {
+                component "datasources" as mon_datasources
+                component "models" as mon_models
+                component "repositories" as mon_data_repos
+            }
+            
+            package "monitoring/domain" <<Rectangle>> DOMAIN_COLOR {
+                component "entities" as mon_entities
+                component "repositories" as mon_domain_repos
+                component "usecases" as mon_usecases
+            }
+            
+            package "monitoring/presentation" <<Rectangle>> PRESENTATION_COLOR {
+                component "views" as mon_views
+                component "providers" as mon_providers
+                component "state" as mon_state
+            }
+        }
+    }
+}
+
+' ========== Dependencies (Clean Architecture) ==========
+
+' Auth dependencies
+auth_views ..> auth_providers
+auth_providers ..> auth_usecases
+auth_usecases ..> auth_domain_repos
+auth_data_repos ..|> auth_domain_repos
+auth_data_repos ..> auth_datasources
+auth_datasources ..> core_network
+
+' Health Data dependencies
+hd_views ..> hd_providers
+hd_providers ..> hd_usecases
+hd_usecases ..> hd_domain_repos
+hd_data_repos ..|> hd_domain_repos
+hd_data_repos ..> hd_datasources
+hd_datasources ..> core_network
+
+' Risk Prediction dependencies
+rp_views ..> rp_providers
+rp_providers ..> rp_usecases
+rp_usecases ..> rp_domain_repos
+rp_data_repos ..|> rp_domain_repos
+rp_data_repos ..> rp_datasources
+rp_datasources ..> core_network
+
+' What-if Analysis dependencies
+wa_views ..> wa_providers
+wa_providers ..> wa_usecases
+wa_usecases ..> wa_domain_repos
+wa_data_repos ..|> wa_domain_repos
+wa_data_repos ..> wa_datasources
+wa_datasources ..> core_network
+
+' Monitoring dependencies
+mon_views ..> mon_providers
+mon_providers ..> mon_usecases
+mon_usecases ..> mon_domain_repos
+mon_data_repos ..|> mon_domain_repos
+mon_data_repos ..> mon_datasources
+mon_datasources ..> core_network
+
+' Core dependencies
+core_data_repos ..|> core_domain_repos
+
+note top of core
+  <b>Core Module</b>
+  공통 기능 및 유틸리티
+end note
+
+note top of features
+  <b>Feature Modules</b>
+  기능별 독립적인 모듈
+  (Feature-First Architecture)
+end note
+
+@enduml

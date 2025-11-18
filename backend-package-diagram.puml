@@ -1,0 +1,232 @@
+@startuml Backend_Detailed_Package_Diagram
+!define RECTANGLE class
+
+skinparam packageStyle rectangle
+
+package "FastAPI Backend Architecture" {
+    
+    package "app" {
+        
+        package "api" <<Layer>> #E3F2FD {
+            package "v1" {
+                package "endpoints" {
+                    class "health_data" as health_endpoint {
+                        + POST /health-data
+                        + GET /health-data/{id}
+                        + GET /health-data/history
+                    }
+                    class "prediction" as pred_endpoint {
+                        + POST /predict
+                        + GET /predictions/{id}
+                        + GET /predictions/history
+                    }
+                    class "analysis" as analysis_endpoint {
+                        + POST /what-if-analysis
+                        + GET /percentile-ranking
+                        + GET /trend-forecasting
+                    }
+                    class "users" as users_endpoint {
+                        + POST /register
+                        + POST /login
+                        + GET /users/me
+                    }
+                    class "monitoring" as monitor_endpoint {
+                        + GET /patient-panel
+                        + POST /sharing-permission
+                        + GET /notifications
+                    }
+                }
+                package "dependencies" {
+                    class "get_current_user()"
+                    class "get_db()"
+                }
+            }
+        }
+        
+        package "services" <<Layer>> #E8F5E9 {
+            class HealthDataService {
+                + create_health_data()
+                + get_health_history()
+                + validate_data()
+            }
+            class PredictionService {
+                + generate_prediction()
+                + get_risk_level()
+                + analyze_risk_factors()
+            }
+            class AnalysisService {
+                + run_whatif_analysis()
+                + calculate_percentile()
+                + forecast_trend()
+            }
+            class AuthService {
+                + authenticate_user()
+                + create_user()
+                + verify_token()
+            }
+            class NotificationService {
+                + send_alert()
+                + send_reminder()
+                + configure_policy()
+            }
+        }
+        
+        package "repositories" <<Layer>> #FFF3E0 {
+            class UserRepository {
+                + create()
+                + find_by_email()
+                + update()
+            }
+            class HealthDataRepository {
+                + create()
+                + find_by_patient()
+                + get_history()
+            }
+            class PredictionRepository {
+                + create()
+                + find_by_id()
+                + get_patient_predictions()
+            }
+            class SharingPermissionRepository {
+                + create()
+                + find_by_patient()
+                + revoke()
+            }
+        }
+        
+        package "models" <<Layer>> #F3E5F5 {
+            class User {
+                + user_id: str
+                + email: str
+                + name: str
+                + role: UserRole
+            }
+            class Patient {
+                + age: int
+                + gender: Gender
+                + medical_history: List
+            }
+            class HealthData {
+                + data_id: str
+                + blood_pressure: int
+                + blood_sugar: float
+                + bmi: float
+            }
+            class RiskPrediction {
+                + prediction_id: str
+                + risk_probability: float
+                + risk_level: RiskLevel
+                + recommendations: List
+            }
+        }
+        
+        package "schemas" <<Layer>> #FCE4EC {
+            class UserSchema {
+                + email: EmailStr
+                + password: str
+            }
+            class HealthDataSchema {
+                + blood_pressure_systolic: int
+                + blood_sugar: float
+            }
+            class PredictionSchema {
+                + risk_probability: float
+                + risk_level: str
+            }
+        }
+        
+        package "core" <<Layer>> #FFF9C4 {
+            class Config {
+                + DATABASE_URL
+                + SECRET_KEY
+                + AI_MODEL_PATH
+            }
+            class Security {
+                + hash_password()
+                + verify_password()
+                + create_access_token()
+            }
+            class Database {
+                + engine
+                + SessionLocal
+                + Base
+            }
+        }
+        
+        package "ml" <<Layer>> #C8E6C9 {
+            class AIEngine {
+                + model: XGBoostModel
+                + load_model()
+                + preprocess_data()
+                + predict()
+                + calculate_shap_values()
+            }
+            class ModelLoader {
+                + load_xgboost_model()
+                + validate_model()
+            }
+            class DataPreprocessor {
+                + handle_missing_values()
+                + encode_categorical()
+                + normalize_features()
+            }
+        }
+    }
+    
+    package "External" {
+        database PostgreSQL {
+        }
+    }
+}
+
+' Layer Dependencies
+endpoints --> services : calls
+services --> repositories : uses
+services --> ml : uses
+repositories --> models : CRUD operations
+endpoints --> schemas : validates request/response
+models --> PostgreSQL : ORM mapping
+core --> PostgreSQL : connection
+
+services --> core : uses Security, Config
+
+' Detailed dependencies
+HealthDataService --> HealthDataRepository
+HealthDataService --> AIEngine
+PredictionService --> PredictionRepository
+PredictionService --> AIEngine
+AnalysisService --> PredictionRepository
+AnalysisService --> HealthDataRepository
+
+AIEngine --> DataPreprocessor
+AIEngine --> ModelLoader
+
+note right of api
+  **API Layer**
+  - HTTP request/response handling
+  - Input validation
+  - Authentication/Authorization
+end note
+
+note right of services
+  **Service Layer**
+  - Business logic
+  - Transaction management
+  - Orchestration
+end note
+
+note right of repositories
+  **Repository Layer**
+  - Data access abstraction
+  - CRUD operations
+  - Query building
+end note
+
+note bottom of ml
+  **ML Module**
+  - XGBoost model inference
+  - SHAP value calculation
+  - Feature importance analysis
+end note
+
+@enduml

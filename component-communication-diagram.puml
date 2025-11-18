@@ -1,0 +1,75 @@
+@startuml Component_Communication
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+
+package "Client Layer" {
+    [Flutter App] as flutter
+}
+
+package "API Gateway Layer" {
+    [FastAPI Router] as router
+    [Authentication Middleware] as auth_mw
+    [CORS Middleware] as cors_mw
+}
+
+package "Business Logic Layer" {
+    [Service Components] as services
+    [ML Engine] as ml
+}
+
+package "Data Access Layer" {
+    [Repository Components] as repos
+    [ORM (SQLAlchemy)] as orm
+}
+
+package "Data Storage Layer" {
+    database "PostgreSQL" as db
+    storage "File Storage\n(ML Models)" as files
+}
+
+' Communication paths
+flutter -down-> cors_mw : HTTP/REST\nJSON
+cors_mw -down-> auth_mw
+auth_mw -down-> router : Authenticated\nRequests
+router -down-> services : Service Calls
+services -down-> repos : Data Operations
+services -down-> ml : Predictions
+repos -down-> orm : Query
+orm -down-> db : SQL
+ml -down-> files : Load Models
+
+' Response flow (dotted)
+db -up[dotted]-> orm : Result Set
+orm -up[dotted]-> repos : Models
+repos -up[dotted]-> services : Entities
+ml -up[dotted]-> services : Predictions
+services -up[dotted]-> router : DTOs/Schemas
+router -up[dotted]-> auth_mw : Response
+auth_mw -up[dotted]-> cors_mw
+cors_mw -up[dotted]-> flutter : JSON Response
+
+note right of flutter
+  **Frontend**
+  - Feature-based architecture
+  - MVVM pattern
+  - Clean architecture layers
+end note
+
+note left of services
+  **Backend Services**
+  - HealthDataService
+  - PredictionService
+  - AnalysisService
+  - AuthService
+  - NotificationService
+end note
+
+note bottom of db
+  **Data Models**
+  - User, Patient, Guardian, Physician
+  - HealthData, RiskPrediction
+  - SharingPermission, Notification
+end note
+
+@enduml
